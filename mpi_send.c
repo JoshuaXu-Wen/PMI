@@ -95,7 +95,7 @@ int main(int argc, const char * argv[]) {
         }
         totalCount += inCircle[0];
         for(int i=1; i<k; i++) {
-            MPI_Recv(&Seed[i], 1, MPI_INT, 0, i, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            MPI_Recv(&inCircle[i], 1, MPI_INT, 0, i, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             // add all the counts from master and all slave processess
             totalCount += inCircle[i];
 
@@ -121,7 +121,7 @@ int main(int argc, const char * argv[]) {
                 } 
             }
 
-            MPI_Send(&Seed[i], 1, MPI_INT, i, 0, MPI_COMM_WORLD);
+            MPI_Send(&inCircle[i], 1, MPI_INT, i, 0, MPI_COMM_WORLD);
         }
             
     }
