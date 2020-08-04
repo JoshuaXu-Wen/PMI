@@ -69,7 +69,7 @@ int main(int argc, const char * argv[]) {
     for(int i=0; i<world_size; i++){
         Seed[i] = rand();
         inCircle[i] = 0;
-        printf("Seed[i] is %d\n", Seed[i]);
+        printf("Seed[%d] is %d\n", i, Seed[i]);
     }
 
 
@@ -105,7 +105,7 @@ int main(int argc, const char * argv[]) {
         for(int i=1; i<world_size; i++) {
             MPI_Recv(&inCircle[i], 1, MPI_INT, i, i, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             // add all the counts from master and all slave processess
-            printf("inCircle[i]is: %d\n", inCircle[i]);
+            printf("inCircle[%d]is: %d\n", i, inCircle[i]);
             totalCount += inCircle[i];
 
         }
@@ -131,7 +131,7 @@ int main(int argc, const char * argv[]) {
                 Seed[i] = i_random;
 
             }
-            printf("inCircle[i] is: %d\n", inCircle[i]);
+            printf("inCircle[%d] is: %d\n", i, inCircle[i]);
             MPI_Send(&inCircle[i], 1, MPI_INT, i, i, MPI_COMM_WORLD);
         }
             
