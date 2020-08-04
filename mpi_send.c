@@ -16,16 +16,14 @@ typedef unsigned long ULONG;
 int main(int argc, const char * argv[]) {
     const ULONG a = 1664525;
     const ULONG c = 1013904223;
-    const ULONG m = (ULONG) pow(2.0, 32.0);
+    const ULONG m = (ULONG) pow(2, 32);
     const ULONG sidelen = sqrt(m);
-    ULONG N = m - pow(2,30);
+    const ULONG N = 100; //m - pow(2,30);
     //const int k = 4;
  
     ULONG A = 1;
     ULONG sum = 0;
     ULONG C = 0;
-    // double rX = 0;
-    // double rY = 0;
 
     MPI_Init(NULL, NULL);
     // world_rank is process id
@@ -61,10 +59,8 @@ int main(int argc, const char * argv[]) {
     // in case sum is still a huge number, to calculate C need mod before multiple c
     // C = (c*sum) mod m = [c(sum mod m)] mod m
     C = (c * (sum % m)) % m;
-//        cout << "C is: " << C << endl;
     printf("C is: %lu\n", C);
     //generate random number for all k proccessors
-     N = 500000;
     // double Distance = 0;
     double totalCount = 0;
     srand(12345);
@@ -73,23 +69,30 @@ int main(int argc, const char * argv[]) {
     for(int i=0; i<world_size; i++){
         Seed[i] = rand();
         inCircle[i] = 0;
+        printf("Seed[i] is %d\n", Seed[i]);
     }
 
 
     if(world_rank == 0) {
         for(int i=1; i<world_size; i++) {
-            MPI_Send(&Seed[i], 1, MPI_INT, 0, i, MPI_COMM_WORLD);
+            MPI_Send(&Seed[i], 1, MPI_INT, i, i, MPI_COMM_WORLD);
         }
 
         for(int j=0; j<N/world_size; j++) {
             //put interge in range(0, 65536)
             ULONG i_random = (A*Seed[0] + C) % m;
-            ULONG rX = i_random % sidelen;
-            ULONG rY = i_random / sidelen;
+            double rX = i_random % sidelen;
+            double rY = i_random / sidelen;
+            // printf("rX before scale is: %f\n", rX);
+            // printf("rY before scale is: %f\n", rY);
             // rescale x and y in (-1, 1)
-            rX = 2 * rX / sidelen -1;
-            rY = 2 * rY / sidelen -1;
+            rX = 2 * rX / sidelen - 1;
+            rY = 2 * rY / sidelen - 1;
             double length = sqrt(pow(rX, 2) + pow(rY, 2));
+            // printf("i_random is: %lu\n", i_random);
+            // printf("rX is: %f\n", rX);
+            // printf("rY is: %f\n", rY);
+            // printf("length is: %f\n", length);
             if(length <= 1) {
                 inCircle[0]++ ;
             } 
@@ -100,7 +103,7 @@ int main(int argc, const char * argv[]) {
         totalCount += inCircle[0];
         printf("inCircle[0] is: %d\n", inCircle[0]);
         for(int i=1; i<world_size; i++) {
-            MPI_Recv(&inCircle[i], 1, MPI_INT, 0, i, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            MPI_Recv(&inCircle[i], 1, MPI_INT, i, i, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             // add all the counts from master and all slave processess
             printf("inCircle[i]is: %d\n", inCircle[i]);
             totalCount += inCircle[i];
@@ -110,18 +113,17 @@ int main(int argc, const char * argv[]) {
 
     else {
         for(int i=1; i<world_size; i++) {
-            MPI_Recv(&Seed[i], 1, MPI_INT, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE); 
+            MPI_Recv(&Seed[i], 1, MPI_INT, i, i, MPI_COMM_WORLD, MPI_STATUS_IGNORE); 
             for(int j=0; j<N/world_size; j++) {
                 ULONG i_random = (A*Seed[i] + C) % m; 
                 //put interge in range(0, 65536)
-                ULONG rX = i_random % sidelen;
-                ULONG rY = i_random / sidelen;
+                double rX = i_random % sidelen;
+                double rY = i_random / sidelen;
                 // rescale x and y in (-1, 1)
                 rX = 2 * rX / sidelen -1;
                 rY = 2 * rY / sidelen -1;
-                // double rX = (double) ((A*Distance[0][0] + C) % m) / pow(2,31) - 1;
-                // double rY = (double) ((A*Distance[0][1] + C) % m) / pow(2,31) - 1;
                 double length = sqrt(pow(rX, 2) + pow(rY, 2));
+                printf("length is: %f\n", length);
                 if(length <= 1) {
                     inCircle[i]++;
                 }
@@ -130,7 +132,7 @@ int main(int argc, const char * argv[]) {
 
             }
             printf("inCircle[i] is: %d\n", inCircle[i]);
-            MPI_Send(&inCircle[i], 1, MPI_INT, i, 0, MPI_COMM_WORLD);
+            MPI_Send(&inCircle[i], 1, MPI_INT, i, i, MPI_COMM_WORLD);
         }
             
     }
