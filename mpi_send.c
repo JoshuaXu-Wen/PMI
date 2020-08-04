@@ -34,7 +34,7 @@ int main(int argc, const char * argv[]) {
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
     int Seed[world_size];
     int inCircle[world_size];
-    
+    printf("total proccessors: %d\n", world_size);
     /* Calculate C with two formula
      (ab) mod m=[a(b mod m)] mod m
      (a+b) mod m=[(a mod m)+(b mod m)] mod m
