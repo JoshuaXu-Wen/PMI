@@ -44,9 +44,6 @@ int main(int argc, char** argv) {
     //int inCircle[world_size];
 
     //printf("total proccessors: %d\n", world_size);
-
-
-    if(world_rank == 0) {
         /* Calculate C with two formula
         (ab) mod m=[a(b mod m)] mod m
         (a+b) mod m=[(a mod m)+(b mod m)] mod m
@@ -57,19 +54,22 @@ int main(int argc, char** argv) {
         4) sum = [(ak-1 mod m) + (ak-2 mod m) + ... + (a0 mod m) ] mod m
         */
         // first calculate the sum
-        for(int i=0; i<world_size; i++) {
-            A = (A * a) % m;
-            ULONG C_temp = 1;
-            for( int j=0; j<=i; j++) {
-                C_temp = (C_temp * a) % m;
-            }
-            sum += C_temp;
+    for(int i=0; i<world_size; i++) {
+        A = (A * a) % m;
+        ULONG C_temp = 1;
+        for( int j=0; j<=i; j++) {
+            C_temp = (C_temp * a) % m;
         }
-        sum = sum % m;
+        sum += C_temp;
+    }
+    sum = sum % m;
         // in case sum is still a huge number, to calculate C need mod before multiple c
         // C = (c*sum) mod m = [c(sum mod m)] mod m
-        C = (c * (sum % m)) % m;
-        fprintf(stdout, "C is: %lu\n", C);
+    C = (c * (sum % m)) % m;
+    fprintf(stdout, "C is: %lu\n", C);
+
+    if(world_rank == 0) {
+
         //generate random number for all proccessors
         // initial the random numbers and counter
         for(int i=0; i<world_size; i++){
@@ -115,7 +115,8 @@ int main(int argc, char** argv) {
     else {
         MPI_Recv(&Seed[world_rank], 1, MPI_INT, 0, 0, MPI_COMM_WORLD, &Stat); 
         inCircle_1 = 0;
-        printf("Seed[%d] is %lu\n", world_rank, Seed[world_rank]);
+        printf("Seed[%d] on process %d is %lu\n", world_rank, world_rank, Seed[world_rank]);
+        printf("A is %lu, and C is %lu on process %d\n", A, C, world_rank);
         for(int j=0; j<N/world_size; j++) {
             ULONG i_random = (A*Seed[world_rank] + C) % m; 
             //put interge in range(0, 65536)
@@ -138,7 +139,6 @@ int main(int argc, char** argv) {
     }
 
     MPI_Finalize();
-
     
     return 0;
 }
