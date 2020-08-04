@@ -21,6 +21,7 @@ int main(int argc, char** argv) {
     const ULONG m = (ULONG) pow(2, 32);
     const ULONG sidelen = sqrt(m);
     const ULONG N = 100; //m - pow(2,30);
+    //const int k = 4;
  
     ULONG A = 1;
     ULONG sum = 0;
@@ -39,7 +40,7 @@ int main(int argc, char** argv) {
     // world_size is total processes
     int world_size;
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-    int Seed[world_size];
+    ULONG Seed[world_size];
     //int inCircle[world_size];
 
     //printf("total proccessors: %d\n", world_size);
@@ -73,7 +74,7 @@ int main(int argc, char** argv) {
         // initial the random numbers and counter
         for(int i=0; i<world_size; i++){
             Seed[i] = rand();
-            fprintf(stdout, "Seed[%d] is %d\n", i, Seed[i]);
+            fprintf(stdout, "Seed[%d] is %lu\n", i, Seed[i]);
             MPI_Send(&Seed[i], 1, MPI_INT, i, 0, MPI_COMM_WORLD);
         }
 
@@ -87,6 +88,7 @@ int main(int argc, char** argv) {
             rX = 2 * rX / sidelen - 1;
             rY = 2 * rY / sidelen - 1;
             double length = sqrt(pow(rX, 2) + pow(rY, 2));
+            printf("length on master process is: %f\n", length);
 
             if(length <= 1) {
                 inCircle_0++ ;
@@ -113,6 +115,7 @@ int main(int argc, char** argv) {
     else {
         MPI_Recv(&Seed[world_rank], 1, MPI_INT, 0, 0, MPI_COMM_WORLD, &Stat); 
         inCircle_1 = 0;
+        printf("Seed[%d] is %lu\n", world_rank, Seed[world_rank]);
         for(int j=0; j<N/world_size; j++) {
             ULONG i_random = (A*Seed[world_rank] + C) % m; 
             //put interge in range(0, 65536)
