@@ -19,13 +19,11 @@ int main(int argc, const char * argv[]) {
     const ULONG m = (ULONG) pow(2.0, 32.0);
     const ULONG sidelen = sqrt(m);
     ULONG N = m - pow(2,30);
-    const int k = 4;
+    //const int k = 4;
  
     ULONG A = 1;
     ULONG sum = 0;
     ULONG C = 0;
-    int Seed[k];
-    int inCircle[k];
     // double rX = 0;
     // double rY = 0;
 
@@ -36,6 +34,8 @@ int main(int argc, const char * argv[]) {
     // world_size is total processes
     int world_size;
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+    int Seed[world_size];
+    int inCircle[world_size];
     
     /* Calculate C with two formula
      (ab) mod m=[a(b mod m)] mod m
@@ -64,7 +64,7 @@ int main(int argc, const char * argv[]) {
 //        cout << "C is: " << C << endl;
     printf("C is: %lu\n", C);
     //generate random number for all k proccessors
-     N = 100;
+     N = 500000;
     // double Distance = 0;
     double totalCount = 0;
     srand(12345);
@@ -98,9 +98,11 @@ int main(int argc, const char * argv[]) {
 
         }
         totalCount += inCircle[0];
+        printf("inCircle[0] is: %d\n", inCircle[0]);
         for(int i=1; i<world_size; i++) {
             MPI_Recv(&inCircle[i], 1, MPI_INT, 0, i, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             // add all the counts from master and all slave processess
+            printf("inCircle[i]is: %d\n", inCircle[i]);
             totalCount += inCircle[i];
 
         }
@@ -109,7 +111,6 @@ int main(int argc, const char * argv[]) {
     else {
         for(int i=1; i<world_size; i++) {
             MPI_Recv(&Seed[i], 1, MPI_INT, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE); 
-
             for(int j=0; j<N/world_size; j++) {
                 ULONG i_random = (A*Seed[i] + C) % m; 
                 //put interge in range(0, 65536)
@@ -122,21 +123,22 @@ int main(int argc, const char * argv[]) {
                 // double rY = (double) ((A*Distance[0][1] + C) % m) / pow(2,31) - 1;
                 double length = sqrt(pow(rX, 2) + pow(rY, 2));
                 if(length <= 1) {
-                    inCircle[i]++ ;
+                    inCircle[i]++;
                 }
                 // use the exist random number as seed to generate a new random number
                 Seed[i] = i_random;
 
             }
-
+            printf("inCircle[i] is: %d\n", inCircle[i]);
             MPI_Send(&inCircle[i], 1, MPI_INT, i, 0, MPI_COMM_WORLD);
         }
             
     }
 
     MPI_Finalize();
+    printf("totalCount is: %f\n",  totalCount);
 
-    double PI = (4 * totalCount / N) / k ;
+    double PI = 4 * totalCount / N ;
     printf("PI is: %f\n", PI);
     
     return 0;
