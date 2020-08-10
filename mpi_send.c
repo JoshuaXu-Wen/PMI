@@ -28,6 +28,7 @@ int main(int argc, char** argv) {
     ULONG totalCount = 0;
     ULONG inCircle_0;
     ULONG inCircle_1;
+    double T0 = 0, T1 = 0;
     srand(12345);
 
 
@@ -69,6 +70,7 @@ int main(int argc, char** argv) {
     fprintf(stdout, "C is: %lu\n", C);
 
     if(world_rank == 0) {
+        T0 = MPI_Wtime();
 
         //generate random number for all proccessors
         // initial the random numbers and counter
@@ -111,9 +113,12 @@ int main(int argc, char** argv) {
         fprintf(stdout, "totalCount is: %lu\n",  totalCount);
         double PI = 4 * totalCount / N ;
         fprintf(stdout, "PI is: %f\n", PI);
+        T0 = MPI_Wtime() - T0;
+        printf("total time on master process is %f\n", T0);
     }
 
     else {
+        T1 = MPI_Wtime();
         MPI_Recv(&Seed, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, &Stat); 
         inCircle_1 = 0;
         printf("Seed[%d] on process %d is %lu\n", world_rank, world_rank, Seed);
@@ -136,6 +141,8 @@ int main(int argc, char** argv) {
         }
         fprintf(stdout, "inCircle_1 on process %d is: %lu\n", world_rank, inCircle_1);
         MPI_Send(&inCircle_1, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
+        T1 = MPI_Wtime() - T1;
+        printf("time on slave process %d is %f\n", world_rank, T1);
     }
 
     MPI_Finalize();
