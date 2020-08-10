@@ -20,7 +20,7 @@ int main(int argc, char** argv) {
     const ULONG c = 1013904223;
     const ULONG m = (ULONG) pow(2, 32);
     const ULONG sidelen = sqrt(m);
-    const ULONG N = 100; //m - pow(2,30);
+    const double N = m - pow(2,30);
     //const int k = 4;
  
     ULONG A = 1;
@@ -72,13 +72,14 @@ int main(int argc, char** argv) {
 
         //generate random number for all proccessors
         // initial the random numbers and counter
-        for(int i=0; i<world_size; i++){
+        for(int i=1; i<world_size; i++){
             Seed[i] = rand();
-            fprintf(stdout, "Seed[%d] is %lu\n", i, Seed[i]);
+            fprintf(stdout, "Seed[%d] on master process is %lu\n", i, Seed[i]);
             MPI_Send(&Seed[i], 1, MPI_INT, i, 0, MPI_COMM_WORLD);
         }
 
         inCircle_0 = 0;
+        Seed[0] = rand();
         for(int j=0; j<N/world_size; j++) {
             //put interge in range(0, 65536)
             ULONG i_random = (A*Seed[0] + C) % m;
@@ -88,7 +89,7 @@ int main(int argc, char** argv) {
             rX = 2 * rX / sidelen - 1;
             rY = 2 * rY / sidelen - 1;
             double length = sqrt(pow(rX, 2) + pow(rY, 2));
-            printf("length on master process is: %f\n", length);
+            //printf("length on master process is: %f\n", length);
 
             if(length <= 1) {
                 inCircle_0++ ;
@@ -103,7 +104,7 @@ int main(int argc, char** argv) {
         for(int i=1; i<world_size; i++) {
             MPI_Recv(&inCircle_1, 1, MPI_INT, i, 0, MPI_COMM_WORLD, &Stat);
             // add all the counts from master and all slave processess
-            fprintf(stdout, "inCircle_1 is: %lu\n", inCircle_1);
+            fprintf(stdout, "inCircle_1 from process %d on Master process: is %lu\n", i, inCircle_1);
             totalCount += inCircle_1;
 
         }
@@ -116,17 +117,16 @@ int main(int argc, char** argv) {
         MPI_Recv(&Seed[world_rank], 1, MPI_INT, 0, 0, MPI_COMM_WORLD, &Stat); 
         inCircle_1 = 0;
         printf("Seed[%d] on process %d is %lu\n", world_rank, world_rank, Seed[world_rank]);
-        printf("A is %lu, and C is %lu on process %d\n", A, C, world_rank);
         for(int j=0; j<N/world_size; j++) {
             ULONG i_random = (A*Seed[world_rank] + C) % m; 
             //put interge in range(0, 65536)
             double rX = i_random % sidelen;
             double rY = i_random / sidelen;
             // rescale x and y in (-1, 1)
-            rX = 2 * rX / sidelen -1;
-            rY = 2 * rY / sidelen -1;
+            rX = 2 * rX / sidelen - 1;
+            rY = 2 * rY / sidelen - 1;
             double length = sqrt(pow(rX, 2) + pow(rY, 2));
-            fprintf(stdout, "length is: %f\n", length);
+            //fprintf(stdout, "length is: %f\n", length);
             if(length <= 1) {
                 inCircle_1++;
             }
@@ -134,11 +134,12 @@ int main(int argc, char** argv) {
             Seed[world_rank] = i_random;
 
         }
-        fprintf(stdout, "inCircle_1 is: %lu\n", inCircle_1);
+        fprintf(stdout, "inCircle_1 on process %d is: %lu\n", world_rank, inCircle_1);
         MPI_Send(&inCircle_1, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
     }
 
     MPI_Finalize();
+
     
     return 0;
 }
