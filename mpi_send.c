@@ -20,8 +20,7 @@ int main(int argc, char** argv) {
     const ULONG c = 1013904223;
     const ULONG m = (ULONG) pow(2, 32);
     const ULONG sidelen = sqrt(m);
-    const double N = m - pow(2,30);
-    //const int k = 4;
+    const double N = m - pow(2,30); // total random numbers, any large number that less than m
  
     ULONG A = 1;
     ULONG sum = 0;
@@ -40,7 +39,8 @@ int main(int argc, char** argv) {
     // world_size is total processes
     int world_size;
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-    ULONG Seed[world_size];
+    //ULONG Seed[world_size];
+    ULONG Seed = 0;
     //int inCircle[world_size];
 
     //printf("total proccessors: %d\n", world_size);
@@ -73,16 +73,16 @@ int main(int argc, char** argv) {
         //generate random number for all proccessors
         // initial the random numbers and counter
         for(int i=1; i<world_size; i++){
-            Seed[i] = rand();
-            fprintf(stdout, "Seed[%d] on master process is %lu\n", i, Seed[i]);
-            MPI_Send(&Seed[i], 1, MPI_INT, i, 0, MPI_COMM_WORLD);
+            Seed = rand();
+            fprintf(stdout, "Seed[%d] on master process is %lu\n", i, Seed);
+            MPI_Send(&Seed, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
         }
 
         inCircle_0 = 0;
-        Seed[0] = rand();
+        Seed = rand();
         for(int j=0; j<N/world_size; j++) {
             //put interge in range(0, 65536)
-            ULONG i_random = (A*Seed[0] + C) % m;
+            ULONG i_random = (A*Seed + C) % m;
             double rX = i_random % sidelen;
             double rY = i_random / sidelen;
             // rescale x and y in (-1, 1)
@@ -95,7 +95,7 @@ int main(int argc, char** argv) {
                 inCircle_0++ ;
             } 
             // use the exist random number as seed to generate a new random number
-            Seed[0] = i_random;
+            Seed = i_random;
 
         }
         totalCount += inCircle_0;
@@ -114,11 +114,11 @@ int main(int argc, char** argv) {
     }
 
     else {
-        MPI_Recv(&Seed[world_rank], 1, MPI_INT, 0, 0, MPI_COMM_WORLD, &Stat); 
+        MPI_Recv(&Seed, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, &Stat); 
         inCircle_1 = 0;
-        printf("Seed[%d] on process %d is %lu\n", world_rank, world_rank, Seed[world_rank]);
+        printf("Seed[%d] on process %d is %lu\n", world_rank, world_rank, Seed);
         for(int j=0; j<N/world_size; j++) {
-            ULONG i_random = (A*Seed[world_rank] + C) % m; 
+            ULONG i_random = (A*Seed + C) % m; 
             //put interge in range(0, 65536)
             double rX = i_random % sidelen;
             double rY = i_random / sidelen;
@@ -131,7 +131,7 @@ int main(int argc, char** argv) {
                 inCircle_1++;
             }
                 // use the exist random number as seed to generate a new random number
-            Seed[world_rank] = i_random;
+            Seed = i_random;
 
         }
         fprintf(stdout, "inCircle_1 on process %d is: %lu\n", world_rank, inCircle_1);
