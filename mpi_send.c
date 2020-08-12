@@ -119,8 +119,9 @@ int main(int argc, char** argv) {
 
     else {
         T1 = MPI_Wtime();
-        MPI_Recv(&Seed, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, &Stat); 
         inCircle_1 = 0;
+        MPI_Recv(&Seed, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, &Stat); 
+
         printf("Seed[%d] on process %d is %lu\n", world_rank, world_rank, Seed);
         for(int j=0; j<N/world_size; j++) {
             ULONG i_random = (A*Seed + C) % m; 
