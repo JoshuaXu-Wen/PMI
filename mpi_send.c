@@ -140,7 +140,7 @@ int main(int argc, char** argv) {
             Seed = i_random;
 
         }
-        fprintf(stdout, "inCircle_1 on process %d is: %lu\n", world_rank, inCircle_1);
+        //fprintf(stdout, "inCircle_1 on process %d is: %lu\n", world_rank, inCircle_1);
         MPI_Send(&inCircle_1, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
         T1 = MPI_Wtime() - T1;
         printf("time on slave process %d is %f\n", world_rank, T1);
