@@ -76,7 +76,7 @@ int main(int argc, char** argv) {
         // initial the random numbers and counter
         for(int i=1; i<world_size; i++){
             Seed = rand();
-            fprintf(stdout, "Seed[%d] on master process is %lu\n", i, Seed);
+            //fprintf(stdout, "Seed[%d] on master process is %lu\n", i, Seed);
             MPI_Send(&Seed, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
         }
 
