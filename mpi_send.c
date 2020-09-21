@@ -101,20 +101,20 @@ int main(int argc, char** argv) {
 
         }
         totalCount += inCircle_0;
-        fprintf(stdout, "inCircle_0 is: %lu\n", inCircle_0);
+        //fprintf(stdout, "inCircle_0 is: %lu\n", inCircle_0);
 
         for(int i=1; i<world_size; i++) {
             MPI_Recv(&inCircle_1, 1, MPI_INT, i, 0, MPI_COMM_WORLD, &Stat);
             // add all the counts from master and all slave processess
-            fprintf(stdout, "inCircle_1 from process %d on Master process: is %lu\n", i, inCircle_1);
+            //fprintf(stdout, "inCircle_1 from process %d on Master process: is %lu\n", i, inCircle_1);
             totalCount += inCircle_1;
 
         }
-        fprintf(stdout, "totalCount is: %lu\n",  totalCount);
+        //fprintf(stdout, "totalCount is: %lu\n",  totalCount);
         double PI = 4 * totalCount / N ;
-        fprintf(stdout, "PI is: %f\n", PI);
         T0 = MPI_Wtime() - T0;
         printf("total time on master process is %f\n", T0);
+        fprintf(stdout, "PI is: %f\n", PI);
     }
 
     else {
@@ -122,7 +122,7 @@ int main(int argc, char** argv) {
         inCircle_1 = 0;
         MPI_Recv(&Seed, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, &Stat); 
 
-        printf("Seed[%d] on process %d is %lu\n", world_rank, world_rank, Seed);
+        //printf("Seed[%d] on process %d is %lu\n", world_rank, world_rank, Seed);
         for(int j=0; j<N/world_size; j++) {
             ULONG i_random = (A*Seed + C) % m; 
             //put interge in range(0, 65536)
