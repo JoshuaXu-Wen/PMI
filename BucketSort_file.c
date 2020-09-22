@@ -61,8 +61,9 @@ int main() {
                 fprintf(fp, "\n\n");
                 fprintf(fp, "#########################################\n\n");
                 fclose(fp);
+                T0 = MPI_Wtime();
         }
-        T0 = MPI_Wtime();
+        
         //scatter the large buckets from root to all processors
         MPI_Scatter(longArr, nums_per_proc, MPI_INT, bucketBuffer,
                 nums_per_proc, MPI_INT, 0, MPI_COMM_WORLD);
@@ -149,9 +150,11 @@ int main() {
 
 
         //check the result on root processor
-        T0 = MPI_Wtime() - T0;
-        fprintf(stdout, "the total time of program is: %f\n", T0);
+        
+        
         if(world_rank == 0) {
+                T0 = MPI_Wtime() - T0;
+                fprintf(stdout, "the total time of program is: %f\n", T0);
                 fp = fopen("longArray.txt", "a+");
                 fprintf(fp,"the sorted longArr is:\n");
                 for(int i=0; i<SIZE; i++) {
