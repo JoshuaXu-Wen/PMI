@@ -4,7 +4,8 @@
 #include <string.h>
 #include <mpi.h>
 #include <assert.h>
-#define SIZE 10000
+#define nums_per_proc 1000000
+//#define SIZE 10000000
 #define MAX_PROCESSES 100
 
 typedef unsigned long ULONG;
@@ -32,7 +33,9 @@ int main() {
 
     //in this case, first divide the original large array into several partitions with equal items
     //the number of partitions (or large bukets) is equal to the processor numbers used for parallel computing
-    const int nums_per_proc = SIZE / world_size;
+    //const int nums_per_proc = SIZE / world_size;
+    //const int nums_per_proc = 1000000;
+    ULONG SIZE = nums_per_proc * world_size;
     const int Divide = (int)ceil(RAND_MAX / world_size);
     //malloc memeory of large Buckets on all the processors
     int * bucketBuffer = (int*)malloc(nums_per_proc * sizeof(int));
@@ -50,13 +53,13 @@ int main() {
 		longArr = (int*)malloc(SIZE * sizeof(int));
 		assert(longArr != NULL);
 	
-		printf("the original arrary is:\n");
+		//printf("the original arrary is:\n");
 		//initial long array with random numbers
-		for(int i=0; i<SIZE; i++) {
-			longArr[i] = rand();
-			printf("%d ", longArr[i]);
-		}
-		printf("\n\n");
+		// for(int i=0; i<SIZE; i++) {
+		// 	longArr[i] = rand();
+		// 	printf("%d ", longArr[i]);
+		// }
+		// printf("\n\n");
 	}
 	//scatter the large buckets from root to all processors
 	MPI_Scatter(longArr, nums_per_proc, MPI_INT, bucketBuffer, 
@@ -143,13 +146,13 @@ int main() {
 		longArr, final_num_per_proc, displs, MPI_INT, 0, MPI_COMM_WORLD);
 
 	//check the result on root processor
-	if(world_rank == 0) {
-		printf("the sorted longArr is:\n");
-		for(int i=0; i<SIZE; i++) {
-			printf("%d\n", longArr[i]);
-		}
-		printf("\n\n");
-	}
+	// if(world_rank == 0) {
+	// 	printf("the sorted longArr is:\n");
+	// 	for(int i=0; i<SIZE; i++) {
+	// 		printf("%d\n", longArr[i]);
+	// 	}
+	// 	printf("\n\n");
+	// }
 
 	//free all the dynamic space
 	if(world_rank == 0) {
