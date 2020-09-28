@@ -5,7 +5,6 @@
 #include <mpi.h>
 #include <assert.h>
 #define nums_per_proc 1000000
-//#define SIZE 10000000
 #define MAX_PROCESSES 100
 
 typedef unsigned long ULONG;
