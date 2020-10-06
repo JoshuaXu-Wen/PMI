@@ -1,0 +1,44 @@
+# Makefile for 159.735 Assignment 3
+#
+# To build just type:
+#
+# make heat_demo
+
+CPP = g++-10
+
+# Flags for Mac OSX
+#CFLAGS = -w -O3 -arch ppc -arch i386
+#CFLAGS = -w -O3 -arch ppc
+# FLAGS for Linux
+CFLAGS = -w -O3
+
+# Locally compiled modules
+OBJS = fitsfile.o
+
+# Link to CFITSIO libraries - modify these paths accordingly
+#LIBP = -L/home/iabond/cfitsio
+#INCP = -I/home/iabond/cfitsio
+LIBP = -L/usr/local/lib/
+INCP = -I/usr/local/include/
+
+LIBS = -lcfitsio -lm
+
+MODS = $(INCP) $(LIBP) $(LIBS) $(OBJS) 
+
+BINS = heat_demo heat_parallel
+#BINS = heat_demo
+all : $(BINS)
+
+clean :
+	rm -f $(BINS)
+	rm -f *.o
+
+# Demo program. Add more programs by making entries similar to this
+heat_parallel : heat_parallel.cpp draw.hxx array.hxx $(OBJS)
+	${CPP} $(CFLAGS) -fopenmp -o heat_parallel heat_parallel.cpp $(MODS)
+heat_demo : heat_demo.cpp draw.hxx array.hxx $(OBJS)
+	${CPP} $(CFLAGS) -fopenmp -o heat_demo heat_demo.cpp $(MODS)
+# Modules compiled and linked separately
+fitsfile.o : fitsfile.cpp fitsfile.h
+	${CPP} $(CFLAGS) $(INCP) -c fitsfile.cpp
+
